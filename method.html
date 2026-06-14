@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="assets/style.css" />
+<title>방법론 — 전국 경찰 순찰 안전지도</title>
+</head>
+<body>
+<div class="topline"></div>
+<nav class="gnb">
+  <a class="site" href="index.html"><span class="mark">&#9733;</span>전국 경찰 순찰 안전지도</a>
+  <div class="links">
+    <a href="index.html">개요</a>
+    <a href="sudogwon/index.html">수도권</a>
+    <a href="gangwon/index.html">강원권</a>
+    <a href="chungcheong/index.html">충청권</a>
+    <a href="honam/index.html">호남권</a>
+    <a href="yeongnam/index.html">영남권</a>
+    <a href="jeju/index.html">제주권</a>
+    <a href="report.html">시설 공백</a>
+    <a href="method.html" class="on">방법론</a>
+  </div>
+</nav>
+<div class="doc">
+  <div class="doc-head">
+    <div class="doc-no">METHODOLOGY</div>
+    <h1>방법론</h1>
+    <p class="doc-sub">수요 격자 구축 → 순찰경로 최적화 → 가상순찰(ABM) 시뮬레이션 → 복합 안전지수 산출의 전 과정.</p>
+  </div>
+
+  <section class="sec">
+    <h2>1. 전체 절차</h2>
+    <div class="flow">
+      <div class="step">
+        <h3><span class="no">1</span>수요 격자 &amp; 루트 최적화</h3>
+        <div class="viz">
+          <svg viewBox="0 0 220 96" width="100%">
+            <g>
+              <rect x="10" y="8" width="20" height="20" fill="#002a5c" opacity=".15"/><rect x="34" y="8" width="20" height="20" fill="#002a5c" opacity=".45"/><rect x="58" y="8" width="20" height="20" fill="#002a5c" opacity=".8"/><rect x="82" y="8" width="20" height="20" fill="#002a5c" opacity=".3"/>
+              <rect x="10" y="32" width="20" height="20" fill="#002a5c" opacity=".35"/><rect x="34" y="32" width="20" height="20" fill="#002a5c" opacity=".7"/><rect x="58" y="32" width="20" height="20" fill="#002a5c" opacity=".25"/><rect x="82" y="32" width="20" height="20" fill="#002a5c" opacity=".55"/>
+            </g>
+            <path d="M122 44 L150 18 L182 32 L206 14" fill="none" stroke="#002a5c" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="122" cy="44" r="5" fill="#fff" stroke="#002a5c" stroke-width="2.5"/>
+            <circle cx="150" cy="18" r="4" fill="#002a5c"/><circle cx="182" cy="32" r="4" fill="#002a5c"/><circle cx="206" cy="14" r="4" fill="#002a5c"/>
+            <text x="10" y="76" fill="#5b6470" font-size="9.5">100m 인구격자 × 시간대 유동인구</text>
+            <text x="10" y="90" fill="#5b6470" font-size="9.5">→ 관서별 닫힌 순찰경로 최적화 (8개 3시간 슬롯)</text>
+          </svg>
+        </div>
+        <p>SGIS 100m 인구 래스터로 도로 위 인구밀도 그리드를 만들고, 시간대별 유동인구 배율을 곱해 3시간 슬롯별 치안수요를 산출한다. 수요 상위 후보노드를 잇는 관서별 닫힌 순찰경로를 차량 수(행정 capacity) 제약 아래 최적화한다.</p>
+      </div>
+      <div class="arr">&rarr;</div>
+      <div class="step">
+        <h3><span class="no">2</span>가상순찰(ABM) 시뮬레이션</h3>
+        <div class="viz">
+          <svg viewBox="0 0 220 96" width="100%">
+            <ellipse cx="95" cy="48" rx="72" ry="32" fill="none" stroke="#002a5c" stroke-width="2.5"/>
+            <path d="M128 22 q22 -16 38 -8 q7 5 -3 14" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="5 4"/>
+            <circle cx="23" cy="48" r="6" fill="#fff" stroke="#002a5c" stroke-width="2.5"/>
+            <text x="104" y="30" font-size="14">&#128659;</text>
+            <text x="138" y="12" fill="#c0392b" font-size="9">샛길 이탈 p=0.01</text>
+            <text x="10" y="90" fill="#5b6470" font-size="9.5">365일 × 8슬롯 = 2,920 슬롯 agent 순찰 → 도로별 방문빈도 누적</text>
+          </svg>
+        </div>
+        <p>순찰 agent가 슬롯별 배정 대수만큼 정규루트를 정속 순찰하되, 확률 0.01로 샛길을 탐방(현장 추가조사)하고 복귀하는 semi-random-walk 모형으로 1년 규모를 시뮬레이션한다. 단시간·고빈도 방문이 범죄 억지에 효과적이라는 핫스팟 폴리싱·Koper Curve 연구 결과를 반영한다.</p>
+      </div>
+      <div class="arr">&rarr;</div>
+      <div class="step">
+        <h3><span class="no">3</span>복합 안전지수 산출</h3>
+        <div class="viz">
+          <svg viewBox="0 0 220 96" width="100%">
+            <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#d62728"/><stop offset=".5" stop-color="#7b2fbe"/><stop offset="1" stop-color="#1f4ed8"/>
+            </linearGradient></defs>
+            <rect x="10" y="10" width="200" height="42" fill="#fff" stroke="#d9dee5"/>
+            <path d="M20 44 L62 24 L108 38 L156 18 L200 30" fill="none" stroke="url(#sg)" stroke-width="4.5" stroke-linecap="round"/>
+            <circle cx="108" cy="38" r="8" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+            <rect x="10" y="62" width="200" height="9" fill="url(#sg)"/>
+            <text x="10" y="86" fill="#5b6470" font-size="9.5">위험 0</text>
+            <text x="178" y="86" fill="#5b6470" font-size="9.5">안전 100</text>
+            <text x="92" y="86" fill="#c0392b" font-size="9.5">사각지대</text>
+          </svg>
+        </div>
+        <p>방문빈도(0.5), 응답접근성(0.3), 방범시설 커버리지(0.2)를 가중 결합해 도로 구간별 안전지수 0~100을 부여한다. <b>전국을 하나의 기준으로 정규화</b>하므로 권역 간 비교가 가능하다. 지수가 낮고 인구 수요가 높은 구간을 사각지대 우선순위로 산출한다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>2. 입력 자료</h2>
+    <table class="gov">
+      <tr><th style="width:230px">자료</th><th>출처·내용</th><th style="width:150px">역할</th></tr>
+      <tr><td>100m 인구격자</td><td>SGIS 센서스 100m 인구 래스터 (252개 시군구 경계 결합)</td><td>수요 그리드</td></tr>
+      <tr><td>시간대 유동인구</td><td>지자체·통신사 공개 유동인구, 8개 3시간 슬롯 profile</td><td>시간대 가중</td></tr>
+      <tr><td>경찰관서·자원</td><td>전국 지구대·파출소 2,047개 주소, 경찰서별 정원, 순찰차 보유 현황</td><td>capacity 제약</td></tr>
+      <tr><td>도로 topology</td><td>큰길(4차선↑)·샛길 구분 도로망 — 전국 약 1,200만 구간</td><td>경로·시뮬레이션</td></tr>
+      <tr><td>방범 행정지표</td><td>CCTV 약 37만, 비상벨 약 8.8만 지점</td><td>시설커버리지</td></tr>
+    </table>
+  </section>
+
+  <section class="sec">
+    <h2>3. 안전지수 식</h2>
+    <div class="formula">SafetyIndex = 100 × ( 0.5 × patrol_norm + 0.3 × access_safe_norm + 0.2 × facility_norm )</div>
+    <table class="gov">
+      <tr><th style="width:170px">항</th><th>산출 방식</th></tr>
+      <tr><td>patrol_norm</td><td>가상순찰 1년 누적 도로 구간 방문 횟수(visits_year)의 전국 기준 정규화 값</td></tr>
+      <tr><td>access_safe_norm</td><td>최근접 관서로부터의 도달시간(access_s)을 안전 방향으로 정규화한 값</td></tr>
+      <tr><td>facility_norm</td><td>구간 주변 CCTV·비상벨 등 방범시설 수(facility_count)의 정규화 값</td></tr>
+    </table>
+    <p class="small">사각지대 우선순위(blindspot_priority)는 낮은 안전지수와 높은 인구 수요(demand_pop)를 결합해 산출한다.</p>
+  </section>
+
+  <section class="sec">
+    <h2>4. 지도 구현 방식 (과부하 방지)</h2>
+    <table class="gov">
+      <tr><th style="width:230px">기법</th><th>내용</th></tr>
+      <tr><td>권역 분할 배포</td><td>전국 데이터를 6개 권역 페이지로 분할. 안전지수 산식·정규화는 전국 공통.</td></tr>
+      <tr><td>격자 타일 분할</td><td>도로 엣지를 격자 타일 JSON으로 분할(밀집 권역은 더 잘게). 전국을 한 번에 그리지 않음.</td></tr>
+      <tr><td>뷰포트 지연로딩 + LOD</td><td>줌인 상태에서 화면에 걸치는 타일만 fetch하고 캐시. 중간 줌은 큰길만, 최대 줌인에서 세부길 포함, 광역에서는 도로 미표시.</td></tr>
+      <tr><td>정지 3초 트리거</td><td>드래그·줌 이동 중에는 로드하지 않고, 화면이 3초 이상 정지했을 때만 로드.</td></tr>
+      <tr><td>시설 아이콘 한정 표시</td><td>CCTV·비상벨은 줌인 + 화면 범위 내 지점만 이모지로 표시 (핀·숫자 클러스터 미사용).</td></tr>
+    </table>
+  </section>
+
+  <section class="sec">
+    <h2>5. 한계 및 유의</h2>
+    <p>· 순찰차 보유 대수는 일부 지역만 확보되어, 그 외 지역은 경찰 정원·지구대 수·청별 차량 대수를 proxy capacity로 사용한다.</p>
+    <p>· 안전지수는 모형 기반 진단 지표로, 실제 치안 수준·범죄 발생과 동일하지 않다.</p>
+  </section>
+</div>
+<footer class="gfoot">
+  <span><b>전국 경찰 순찰 안전지도</b> — 순찰경로 최적화·가상순찰(ABM) 시뮬레이션 기반 도로 안전지수 시각화</span>
+  <span>안전지수는 전국 공통 산식(0~100)이며, 권역 구분은 표시·배포 단위입니다.</span>
+  <span>연구·분석용 산출물로 실제 치안 상황과 다를 수 있습니다.</span>
+</footer>
+</body>
+</html>

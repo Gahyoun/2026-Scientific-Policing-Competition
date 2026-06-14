@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="assets/style.css" />
+<style>
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+  .filters label { display: block; margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--navy); }
+  .filters select { width: 100%; height: 38px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; color: var(--ink); padding: 0 9px; font-size: 14px; font-family: inherit; }
+  .filters select:focus { outline: none; border-color: var(--navy); }
+  .filter-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 2px; }
+  .filter-foot .count { font-size: 13.5px; color: var(--navy); font-weight: 700; }
+  .filter-foot button { height: 34px; padding: 0 14px; border: 1px solid var(--line-strong); background: #fff; color: var(--ink); border-radius: 6px; font-size: 13px; font-family: inherit; cursor: pointer; }
+  .filter-foot button:hover { background: var(--navy-tint); }
+  #gapTable td.r { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+<title>치안시설 공백 지점 보고 — 전국 경찰 순찰 안전지도</title>
+</head>
+<body>
+<div class="topline"></div>
+<nav class="gnb">
+  <a class="site" href="index.html"><span class="mark">&#9733;</span>전국 경찰 순찰 안전지도</a>
+  <div class="links">
+    <a href="index.html">개요</a>
+    <a href="sudogwon/index.html">수도권</a>
+    <a href="gangwon/index.html">강원권</a>
+    <a href="chungcheong/index.html">충청권</a>
+    <a href="honam/index.html">호남권</a>
+    <a href="yeongnam/index.html">영남권</a>
+    <a href="jeju/index.html">제주권</a>
+    <a href="report.html" class="on">시설 공백</a>
+    <a href="method.html">방법론</a>
+  </div>
+</nav>
+<div class="doc">
+  <div class="doc-head">
+    <div class="doc-no">FACILITY GAP REPORT — 고수요 · 방범시설 부재 지점</div>
+    <h1>치안시설 공백 지점 보고</h1>
+    <p class="doc-sub">인구밀도·유동인구 수요가 높음에도 반경 내 CCTV·비상벨이 <b>전무(0개)</b>한 지점을 <b>관할 관서 단위</b>로 집계해 조회합니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>1. 요약</h2>
+    <table class="gov">
+      <tr><th>공백 지점(전체)</th><th>공백 보유 관서 수</th><th>최고 인구수요</th><th>공백 지점 평균 안전지수</th></tr>
+      <tr><td>598</td><td>31</td><td>6,088</td><td>32.6 / 100</td></tr>
+    </table>
+    <div class="note">선정 기준: 사각지대 후보 중 <b>facility_count = 0</b>(반경 내 CCTV·비상벨 없음) 지점을 관서별로 집계. <b>[지도 확인]</b>을 누르면 해당 관서의 공백 지점 전체가 지도에 &#9888;로 표시됩니다.</div>
+    <p class="small">전체 지점 목록 내려받기: <a href="assets/facility_gaps.csv" download>facility_gaps.csv</a></p>
+  </section>
+
+  <section class="sec">
+    <h2>2. 권역별 분포</h2>
+    <table class="gov">
+      <tr><th>권역</th><th>공백 지점 수</th><th>비중</th></tr>
+      <tr><td>수도권</td><td>285</td><td>47.7%</td></tr>
+      <tr><td>강원권</td><td>22</td><td>3.7%</td></tr>
+      <tr><td>충청권</td><td>203</td><td>33.9%</td></tr>
+      <tr><td>호남권</td><td>14</td><td>2.3%</td></tr>
+      <tr><td>영남권</td><td>74</td><td>12.4%</td></tr>
+    </table>
+  </section>
+
+  <section class="sec">
+    <h2>3. 관할별 조회</h2>
+    <div class="filters">
+      <div><label for="fRegion">권역</label><select id="fRegion"></select></div>
+      <div><label for="fSido">시도</label><select id="fSido"></select></div>
+      <div><label for="fStation">경찰서</label><select id="fStation"></select></div>
+      <div><label for="fOffice">관서</label><select id="fOffice"></select></div>
+      <div><label for="fSort">정렬</label><select id="fSort">
+        <option value="count">공백 지점수 많은순</option>
+        <option value="demand">인구수요 높은순</option>
+        <option value="priority">우선순위 높은순</option>
+        <option value="safety">안전지수 낮은순</option>
+      </select></div>
+    </div>
+    <div class="filter-foot">
+      <span class="count" id="gapCount">-</span>
+      <button id="fReset">필터 초기화</button>
+      <span class="small">관서 단위 집계 · 표는 최대 500행</span>
+    </div>
+    <table class="gov" id="gapTable">
+      <thead>
+        <tr><th style="width:46px">순위</th><th>권역</th><th>시도</th><th>경찰서</th><th>관서</th><th style="width:80px">공백 지점</th><th style="width:96px">최고 인구수요</th><th style="width:80px">최저 안전</th><th style="width:74px">우선순위</th><th style="width:96px">지도</th></tr>
+      </thead>
+      <tbody id="gapBody"></tbody>
+    </table>
+  </section>
+</div>
+<footer class="gfoot">
+  <span><b>전국 경찰 순찰 안전지도</b> — 순찰경로 최적화·가상순찰(ABM) 시뮬레이션 기반 도로 안전지수 시각화</span>
+  <span>안전지수는 전국 공통 산식(0~100)이며, 권역 구분은 표시·배포 단위입니다.</span>
+  <span>연구·분석용 산출물로 실제 치안 상황과 다를 수 있습니다.</span>
+</footer>
+<script>
+"use strict";
+const GAPS = [["sudogwon","서울","서울관악","남현",79,6088,28.1,0.719,37.46276,126.95922,"서울_서울관악_남현"],["chungcheong","대전","대전유성","유성",18,5435,39.5,0.54,36.36606,127.35974,"대전_대전유성_유성"],["chungcheong","대전","대전둔산","갈마",10,5435,28.6,0.637,36.36622,127.35962,"대전_대전둔산_갈마"],["sudogwon","인천","인천연수","송도국제도시2",7,4593,44.2,0.421,37.38446,126.66671,"인천_인천연수_송도국제도시2"],["sudogwon","인천","인천연수","송도국제도시",35,4593,44.0,0.411,37.3835,126.66769,"인천_인천연수_송도국제도시"],["yeongnam","대구","대구동부","큰고개",4,4303,28.6,0.505,35.89125,128.61259,"대구_대구동부_큰고개"],["yeongnam","대구","대구북부","산격",1,4303,28.8,0.503,35.8909,128.61162,"대구_대구북부_산격"],["chungcheong","충남","아산","신창",10,3734,43.8,0.345,36.77006,126.93103,"충남_아산_신창"],["chungcheong","충남","아산","도고선장",10,3734,26.3,0.452,36.76931,126.92923,"충남_아산_도고선장"],["chungcheong","대전","대전유성","신성",48,3574,27.6,0.425,36.36472,127.34519,"대전_대전유성_신성"],["chungcheong","충북","청주흥덕","복대",74,3550,27.8,0.421,36.63119,127.45417,"충북_청주흥덕_복대"],["chungcheong","충북","청주청원","사창",33,3550,27.4,0.423,36.63001,127.45619,"충북_청주청원_사창"],["yeongnam","경남","진주","개양",29,3498,29.5,0.405,35.15411,128.10231,"경남_진주_개양"],["sudogwon","서울","서울마포","연남",18,3464,28.7,0.406,37.56671,126.94203,"서울_서울마포_연남"],["sudogwon","서울","서울종로","교남",17,3464,47.8,0.297,37.56653,126.94233,"서울_서울종로_교남"],["sudogwon","서울","서울서대문","충정로",19,3464,41.6,0.332,37.56521,126.94204,"서울_서울서대문_충정로"],["sudogwon","서울","서울서대문","연희",29,3464,28.9,0.405,37.56656,126.94252,"서울_서울서대문_연희"],["honam","광주","광주북부","용봉",11,3228,28.2,0.381,35.17518,126.90941,"광주_광주북부_용봉"],["yeongnam","경북","포항북부","양덕",19,2962,28.4,0.348,36.10457,129.38885,"경북_포항북부_양덕"],["gangwon","강원","원주","흥업",22,2875,27.1,0.344,37.28072,127.90186,"강원_원주_흥업"],["sudogwon","경기남부","수원팔달","인계",11,2852,27.8,0.338,37.28116,127.04728,"경기남부_수원팔달_인계"],["honam","전북","익산","신동",3,2756,29.3,0.32,35.96646,126.95587,"전북_익산_신동"],["yeongnam","부산","부산남부","용호",11,2688,28.9,0.314,35.13334,129.10705,"부산_부산남부_용호"],["yeongnam","부산","부산수영","광남",10,2688,28.7,0.315,35.13497,129.10805,"부산_부산수영_광남"],["sudogwon","경기남부","시흥","옥구",7,2620,28.1,0.309,37.33973,126.73319,"경기남부_시흥_옥구"],["sudogwon","경기남부","시흥","시화",16,2620,28.3,0.309,37.33947,126.73289,"경기남부_시흥_시화"],["sudogwon","경기남부","수원팔달","화서문",24,2545,27.5,0.303,37.2926,126.97376,"경기남부_수원팔달_화서문"],["sudogwon","서울","서울광진","화양",3,2513,29.4,0.291,37.54127,127.07405,"서울_서울광진_화양"],["sudogwon","서울","서울광진","자양",1,2513,29.4,0.291,37.54122,127.07387,"서울_서울광진_자양"],["sudogwon","서울","서울광진","구의",4,2513,28.9,0.293,37.54141,127.07394,"서울_서울광진_구의"],["sudogwon","경기북부","파주","월롱",15,2443,25.7,0.298,37.80778,126.76404,"경기북부_파주_월롱"]];   // [rg, sido, station, office, count, demand, safety, priority, lat, lng, officeId]
+const RNAME = {"sudogwon": "수도권", "gangwon": "강원권", "chungcheong": "충청권", "honam": "호남권", "yeongnam": "영남권", "jeju": "제주권"};
+const MAX_ROWS = 500;
+const ALL = "__all__";
+const $ = (id) => document.getElementById(id);
+function uniqSorted(a) { return [...new Set(a)].sort((x, y) => x.localeCompare(y, "ko")); }
+function fill(sel, items, allLabel) {
+  const cur = sel.value; sel.innerHTML = "";
+  const o0 = document.createElement("option"); o0.value = ALL; o0.textContent = allLabel; sel.appendChild(o0);
+  for (const it of items) { const o = document.createElement("option"); o.value = it; o.textContent = it; sel.appendChild(o); }
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+function regionFiltered() { const v = $("fRegion").value; return v === ALL ? GAPS : GAPS.filter(g => g[0] === v); }
+function syncOptions() {
+  if ($("fRegion").options.length === 0) {
+    const sel = $("fRegion");
+    const o0 = document.createElement("option"); o0.value = ALL; o0.textContent = "전체 권역"; sel.appendChild(o0);
+    Object.keys(RNAME).forEach(k => { if (GAPS.some(g => g[0] === k)) { const o = document.createElement("option"); o.value = k; o.textContent = RNAME[k]; sel.appendChild(o); } });
+  }
+  const base = regionFiltered();
+  fill($("fSido"), uniqSorted(base.map(g => g[1])), "전체 시도");
+  const aS = $("fSido").value === ALL ? base : base.filter(g => g[1] === $("fSido").value);
+  fill($("fStation"), uniqSorted(aS.map(g => g[2])), "전체 경찰서");
+  const aT = $("fStation").value === ALL ? aS : aS.filter(g => g[2] === $("fStation").value);
+  fill($("fOffice"), uniqSorted(aT.map(g => g[3])), "전체 관서");
+}
+function current() {
+  let rows = regionFiltered();
+  if ($("fSido").value !== ALL) rows = rows.filter(g => g[1] === $("fSido").value);
+  if ($("fStation").value !== ALL) rows = rows.filter(g => g[2] === $("fStation").value);
+  if ($("fOffice").value !== ALL) rows = rows.filter(g => g[3] === $("fOffice").value);
+  const k = $("fSort").value;
+  const idx = k === "count" ? 4 : k === "demand" ? 5 : k === "priority" ? 7 : 6;
+  rows = rows.slice().sort((a, b) => idx === 6 ? a[6] - b[6] : b[idx] - a[idx]);
+  return rows;
+}
+function render() {
+  const rows = current();
+  let pts = 0; rows.forEach(g => pts += g[4]);
+  $("gapCount").textContent = "관서 " + rows.length.toLocaleString("ko-KR") + "곳 · 공백 " + pts.toLocaleString("ko-KR") + "지점";
+  const body = $("gapBody"); body.innerHTML = "";
+  rows.slice(0, MAX_ROWS).forEach((g, i) => {
+    const tr = document.createElement("tr");
+    const link = g[0] + "/index.html?office=" + encodeURIComponent(g[10]) + "&lat=" + g[8] + "&lng=" + g[9];
+    tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + RNAME[g[0]] + "</td><td>" + g[1] + "</td><td>" + g[2] +
+      "</td><td>" + g[3] + "</td><td class='r'>" + g[4] + "</td><td class='r'>" + Number(g[5]).toLocaleString("ko-KR") +
+      "</td><td class='r'>" + g[6] + "</td><td class='r'>" + g[7] +
+      "</td><td><a href='" + link + "'>지도 →</a></td>";
+    body.appendChild(tr);
+  });
+}
+function onFilter(lv) {
+  if (lv === "region") { $("fSido").value = ALL; $("fStation").value = ALL; $("fOffice").value = ALL; }
+  if (lv === "sido") { $("fStation").value = ALL; $("fOffice").value = ALL; }
+  if (lv === "station") { $("fOffice").value = ALL; }
+  syncOptions(); render();
+}
+$("fRegion").addEventListener("change", () => onFilter("region"));
+$("fSido").addEventListener("change", () => onFilter("sido"));
+$("fStation").addEventListener("change", () => onFilter("station"));
+$("fOffice").addEventListener("change", render);
+$("fSort").addEventListener("change", render);
+$("fReset").addEventListener("click", () => { ["fRegion","fSido","fStation","fOffice"].forEach(id => $(id).value = ALL); $("fSort").value = "count"; syncOptions(); render(); });
+syncOptions(); render();
+</script>
+</body>
+</html>

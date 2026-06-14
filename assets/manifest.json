@@ -1,0 +1,74 @@
+{
+  "totalEdges": 16827281,
+  "safetyMean": 52.4,
+  "tileDeg": {
+    "sudogwon": 0.02,
+    "gangwon": 0.05,
+    "chungcheong": 0.03,
+    "honam": 0.03,
+    "yeongnam": 0.02,
+    "jeju": 0.05
+  },
+  "regions": {
+    "sudogwon": {
+      "edges": 6635897,
+      "mean": 54.7,
+      "tiles": 2641,
+      "mb": 352.7,
+      "stations": 679,
+      "cctv": 132713,
+      "bell": 65577,
+      "blind": 400
+    },
+    "gangwon": {
+      "edges": 889479,
+      "mean": 48.5,
+      "tiles": 562,
+      "mb": 47.5,
+      "stations": 106,
+      "cctv": 30101,
+      "bell": 2219,
+      "blind": 22
+    },
+    "chungcheong": {
+      "edges": 2322134,
+      "mean": 49.3,
+      "tiles": 1602,
+      "mb": 123.9,
+      "stations": 237,
+      "cctv": 51034,
+      "bell": 5748,
+      "blind": 400
+    },
+    "honam": {
+      "edges": 2381373,
+      "mean": 51.3,
+      "tiles": 2090,
+      "mb": 127.0,
+      "stations": 408,
+      "cctv": 43217,
+      "bell": 3582,
+      "blind": 137
+    },
+    "yeongnam": {
+      "edges": 4185607,
+      "mean": 52.8,
+      "tiles": 5102,
+      "mb": 222.8,
+      "stations": 591,
+      "cctv": 115970,
+      "bell": 10203,
+      "blind": 267
+    },
+    "jeju": {
+      "edges": 412791,
+      "mean": 42.3,
+      "tiles": 97,
+      "mb": 22.1,
+      "stations": 26,
+      "cctv": 1044,
+      "bell": 805,
+      "blind": 0
+    }
+  }
+}

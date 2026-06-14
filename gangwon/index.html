@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="assets/style.css" />
+<title>강원권 안전지도 — 전국 경찰 순찰 안전지도</title>
+<style>html,body{height:100%}body{overflow:hidden}</style>
+</head>
+<body>
+<div class="topline"></div>
+<nav class="gnb">
+  <a class="site" href="../index.html"><span class="mark">&#9733;</span>전국 경찰 순찰 안전지도</a>
+  <div class="links">
+    <a href="../index.html">개요</a>
+    <a href="../sudogwon/index.html">수도권</a>
+    <a href="../gangwon/index.html" class="on">강원권</a>
+    <a href="../chungcheong/index.html">충청권</a>
+    <a href="../honam/index.html">호남권</a>
+    <a href="../yeongnam/index.html">영남권</a>
+    <a href="../jeju/index.html">제주권</a>
+    <a href="../report.html">시설 공백</a>
+    <a href="../method.html">방법론</a>
+  </div>
+</nav>
+<div class="map-wrap">
+  <div id="map"></div>
+
+  <div class="panel">
+    <h2>강원권 · 복합 안전지수 (0~100)</h2>
+    <span class="small">도로 구간(엣지) 단위 채색 · 전국 공통 산식</span>
+    <div class="lg-bar" id="lgBar"></div>
+    <div class="lg-cap"><span>위험 0</span><span>50</span><span>안전 100</span></div>
+    <div class="layers">
+      <label><input type="checkbox" id="lyStation" checked> 경찰관서 핀 (지구대·파출소)</label>
+      <label><input type="checkbox" id="lyCctv" checked> &#128247; CCTV <span class="small">(줌인 시)</span></label>
+      <label><input type="checkbox" id="lyBell" checked> &#128276; 비상벨 <span class="small">(줌인 시)</span></label>
+      <label><input type="checkbox" id="lyBlind"> &#9888; 사각지대 상위 구간</label>
+    </div>
+    <div class="small" style="margin-top:9px">줌 단계별 표시: 광역(도로 없음) &rarr; <b>큰길</b> &rarr; <b>세부길 포함</b>.<br>화면을 <b>3초간 정지</b>하면 해당 영역만 로드됩니다.</div>
+  </div>
+
+  <div id="status">로딩...</div>
+
+  <div id="keybox" class="keybox">
+    <div class="inner">
+      <h2>카카오맵 키가 필요합니다</h2>
+      <p id="keymsg">URL에 <code>?appkey=카카오_JS_키</code>를 붙여 접속하거나, 브라우저 콘솔에서 <code>localStorage.KAKAO_JAVASCRIPT_KEY</code>를 설정한 뒤 새로고침하십시오.</p>
+      <p class="small">file:// 로 직접 연 경우 데이터 fetch가 차단됩니다. <code>python3 -m http.server</code> 또는 GitHub Pages로 확인하십시오.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ===== 빌드 시 주입 ===== */
+function embeddedKey() { return "8b7a70b44b00a3037052d32da12ccf54"; }
+const M = {"g":0.05,"lon0":124.0,"lat0":33.0,"fullLevel":5,"majorLevel":8,"pointLevel":5,"dwellMs":3000,"initLevel":11,"center":[127.94,37.34],"stats":{"edges":889479,"mean":48.5,"tiles":562,"mb":47.5,"stations":106,"cctv":30101,"bell":2219,"blind":22},"majorStride":2};
+
+/* ===== 줌 단계(LOD) — 과부하 방지 =====
+   level <= FULL_LEVEL  : 세부길 포함 전체 도로
+   level <= MAJOR_LEVEL : 큰길(4차선↑)만
+   level >  MAJOR_LEVEL : 도로 표시 없음 (광역 단위 격자 제거) */
+const FULL_LEVEL = M.fullLevel != null ? M.fullLevel : 5;
+const MAJOR_LEVEL = M.majorLevel != null ? M.majorLevel : 8;
+const POINT_LEVEL = M.pointLevel;
+const DWELL_MS = M.dwellMs;
+const MAX_TILE_CACHE = 300;
+const MAX_PT_ON_SCREEN = 900;
+const MAJOR_STRIDE = M.majorStride != null ? M.majorStride : 3;  /* 큰길 모드 다운샘플링 간격(클수록 가벼움) */
+
+const $ = (id) => document.getElementById(id);
+const status = $("status");
+
+/* ===== 안전지수 색상: 10개 이산 구간 (빨강→보라→파랑, 양끝 매우 짙게) ===== */
+const BINS = [
+  "#c00018", // 0-16.7   짙은 빨강 (위험)
+  "#e3403c", // 16.7-33.3
+  "#b13fa1", // 33.3-50  자홍
+  "#7c3fbd", // 50-66.7  보라
+  "#4f46d6", // 66.7-83.3 청보라
+  "#2f54c8"  // 83.3-100 파랑 (안전)
+];
+function color(s) { return BINS[Math.max(0, Math.min(BINS.length - 1, Math.floor(s / 100 * BINS.length)))]; }
+
+function getKey() {
+  const q = new URLSearchParams(location.search);
+  const k = q.get("appkey") || q.get("kakao_appkey") || "";
+  if (k) { try { localStorage.setItem("KAKAO_JAVASCRIPT_KEY", k); } catch (e) {} return k; }
+  let stored = "";
+  try { stored = localStorage.getItem("KAKAO_JAVASCRIPT_KEY") || ""; } catch (e) {}
+  if (stored) return stored;
+  return embeddedKey();
+}
+function showKeyBox(msg) {
+  if (msg) $("keymsg").innerHTML = msg;
+  $("keybox").classList.add("on");
+  status.textContent = "대기";
+}
+
+let map = null;
+const state = {
+  tileCache: new Map(), tileState: {},
+  ptCache: new Map(), ptState: {},
+  stations: null, clusterer: null, stationsOn: true,
+  blind: null, blindOv: [], blindOn: false,
+  dwellTimer: null, info: null
+};
+
+function tileId(ix, iy) { return ix + "_" + iy; }
+function viewportIds() {
+  const b = map.getBounds(), sw = b.getSouthWest(), ne = b.getNorthEast();
+  const g = M.g;
+  const ix0 = Math.floor((sw.getLng() - M.lon0) / g), ix1 = Math.floor((ne.getLng() - M.lon0) / g);
+  const iy0 = Math.floor((sw.getLat() - M.lat0) / g), iy1 = Math.floor((ne.getLat() - M.lat0) / g);
+  const ids = [];
+  for (let ix = ix0; ix <= ix1; ix++) for (let iy = iy0; iy <= iy1; iy++) ids.push(tileId(ix, iy));
+  return ids;
+}
+
+function lod() {
+  const l = map.getLevel();
+  if (l <= FULL_LEVEL) return "full";    // 세부길 포함
+  if (l <= MAJOR_LEVEL) return "major";  // 큰길만
+  return "off";                          // 광역 단위: 도로 표시 없음
+}
+function makeLine(e) {
+  return new kakao.maps.Polyline({
+    path: [new kakao.maps.LatLng(e[1], e[0]), new kakao.maps.LatLng(e[3], e[2])],
+    strokeWeight: e[5] ? 5 : 3,
+    strokeColor: color(e[4]),
+    strokeOpacity: 0.35
+  });
+}
+function setTileVis(t, mode) {
+  // 큰길 모드: 도로 조각을 stride 간격으로 솎아 렌더 부하를 낮춤(중간줌에선 빈틈이 안 보임).
+  // 세부길 모드: 큰길 전체 + 세부길 전체.  메모리 절약 위해 필요한 모드의 레이어만 생성.
+  if (mode === "full") {
+    if (!t.majorAll) t.majorAll = t.edges.filter(e => e[5]).map(makeLine);
+    if (!t.minors) t.minors = t.edges.filter(e => !e[5]).map(makeLine);
+    t.majorAll.forEach(p => p.setMap(map));
+    t.minors.forEach(p => p.setMap(map));
+    if (t.majorSparse) t.majorSparse.forEach(p => p.setMap(null));
+  } else if (mode === "major") {
+    if (!t.majorSparse) {
+      const maj = t.edges.filter(e => e[5]);
+      t.majorSparse = maj.filter((_, i) => i % MAJOR_STRIDE === 0).map(makeLine);
+    }
+    t.majorSparse.forEach(p => p.setMap(map));
+    if (t.majorAll) t.majorAll.forEach(p => p.setMap(null));
+    if (t.minors) t.minors.forEach(p => p.setMap(null));
+  } else {
+    destroyTile(t);
+  }
+}
+function destroyTile(t) {
+  ["majorAll", "majorSparse", "minors"].forEach(k => { if (t[k]) t[k].forEach(p => p.setMap(null)); });
+}
+function hideAllEdges() { state.tileCache.forEach(t => destroyTile(t)); }
+function applyEdgeVisibility() { const m = lod(); state.tileCache.forEach(t => setTileVis(t, m)); }
+function renderEdgeTile(id, edges) {
+  const t = { edges: edges, majorAll: null, majorSparse: null, minors: null };
+  setTileVis(t, lod());
+  state.tileCache.set(id, t);
+  if (state.tileCache.size > MAX_TILE_CACHE) {
+    const oldest = state.tileCache.keys().next().value;
+    destroyTile(state.tileCache.get(oldest));
+    state.tileCache.delete(oldest);
+    delete state.tileState[oldest];
+  }
+}
+function loadEdges() {
+  const m = lod();
+  if (m !== "full" && m !== "major") return;
+  const ids = viewportIds();
+  let loading = 0;
+  ids.forEach(id => {
+    if (state.tileState[id]) {
+      const cached = state.tileCache.get(id);
+      if (cached) setTileVis(cached, lod());
+      return;
+    }
+    state.tileState[id] = "loading"; loading++;
+    fetch("assets/tiles/" + id + ".json")
+      .then(r => r.ok ? r.json() : null)
+      .then(edges => {
+        if (edges && edges.length) renderEdgeTile(id, edges);
+        state.tileState[id] = "done";
+        status.textContent = lodLabel() + " · 타일 " + state.tileCache.size + "개";
+      })
+      .catch(() => { state.tileState[id] = "empty"; });
+  });
+  if (loading) status.textContent = "도로 안전도 로딩 " + loading + "건...";
+  else status.textContent = lodLabel() + " · 타일 " + state.tileCache.size + "개";
+}
+function lodLabel() {
+  const m = lod();
+  return m === "full" ? "전체 도로(세부길 포함)" : m === "major" ? "큰길(주요도로)만" : "";
+}
+
+function ptVisibleType(t) { return t === 0 ? $("lyCctv").checked : $("lyBell").checked; }
+function makePtOverlay(p) {
+  const el = document.createElement("div");
+  el.className = "pt";
+  el.textContent = p[2] === 0 ? "📷" : "🔔";
+  el.dataset.t = p[2];
+  return new kakao.maps.CustomOverlay({
+    position: new kakao.maps.LatLng(p[1], p[0]),
+    content: el, xAnchor: 0.5, yAnchor: 0.5, zIndex: 6
+  });
+}
+function applyPtVisibility() {
+  const zoomOk = map.getLevel() <= POINT_LEVEL;
+  let shown = 0;
+  state.ptCache.forEach(arr => arr.forEach(o => {
+    const t = Number(o.getContent().dataset.t);
+    const on = zoomOk && ptVisibleType(t) && shown < MAX_PT_ON_SCREEN;
+    o.setMap(on ? map : null);
+    if (on) shown++;
+  }));
+}
+function loadPoints() {
+  if (map.getLevel() > POINT_LEVEL) return;
+  if (!$("lyCctv").checked && !$("lyBell").checked) return;
+  viewportIds().forEach(id => {
+    if (state.ptState[id]) return;
+    state.ptState[id] = "loading";
+    fetch("assets/points/" + id + ".json")
+      .then(r => r.ok ? r.json() : null)
+      .then(pts => {
+        state.ptState[id] = "done";
+        if (!pts || !pts.length) return;
+        state.ptCache.set(id, pts.map(makePtOverlay));
+        if (state.ptCache.size > 200) {
+          const oldest = state.ptCache.keys().next().value;
+          state.ptCache.get(oldest).forEach(o => o.setMap(null));
+          state.ptCache.delete(oldest);
+          delete state.ptState[oldest];
+        }
+        applyPtVisibility();
+      })
+      .catch(() => { state.ptState[id] = "empty"; });
+  });
+  applyPtVisibility();
+}
+
+function loadStations() {
+  fetch("assets/stations.json").then(r => r.json()).then(rows => {
+    state.stations = rows.map(s => {
+      const mk = new kakao.maps.Marker({ position: new kakao.maps.LatLng(s[1], s[0]), title: s[2] + s[3] });
+      kakao.maps.event.addListener(mk, "click", () => {
+        state.info.setContent('<div style="padding:9px 12px;font-size:12.5px;line-height:1.5;color:#1c1f24;min-width:170px"><b style="color:#002a5c">' +
+          s[2] + " " + s[3] + "</b><br>" + s[4] + " " + s[5] + "</div>");
+        state.info.open(map, mk);
+      });
+      return mk;
+    });
+    state.clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 7 });
+    state.clusterer.addMarkers(state.stations);
+  }).catch(() => {});
+}
+function setStationsVisible(on) {
+  if (!state.clusterer) return;
+  if (on && !state.stationsOn) state.clusterer.addMarkers(state.stations);
+  if (!on && state.stationsOn) state.clusterer.removeMarkers(state.stations);
+  state.stationsOn = on;
+}
+
+function setBlind(on) {
+  state.blindOn = on;
+  if (on && !state.blind) {
+    fetch("assets/blindspots.json").then(r => r.json()).then(rows => {
+      state.blind = rows;
+      state.blindOv = rows.map(b => {
+        const el = document.createElement("div");
+        el.className = "bs";
+        el.textContent = "⚠️";
+        el.title = "안전지수 " + b[2] + " · 우선순위 " + b[3];
+        el.addEventListener("click", () => {
+          state.info.setContent('<div style="padding:9px 12px;font-size:12.5px;line-height:1.5;color:#1c1f24;min-width:190px"><b style="color:#c0392b">치안 사각지대 후보</b><br>안전지수 ' +
+            b[2] + " / 100<br>우선순위 " + b[3] + (b[4] ? "<br>주변 인구수요 " + b[4].toLocaleString("ko-KR") : "") + "</div>");
+          state.info.setPosition(new kakao.maps.LatLng(b[1], b[0]));
+          state.info.open(map);
+        });
+        const ov = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(b[1], b[0]),
+          content: el, xAnchor: 0.5, yAnchor: 0.5, zIndex: 7
+        });
+        if (state.blindOn) ov.setMap(map);
+        return ov;
+      });
+    }).catch(() => {});
+    return;
+  }
+  state.blindOv.forEach(o => o.setMap(on ? map : null));
+}
+
+function cancelDwell() { if (state.dwellTimer) { clearTimeout(state.dwellTimer); state.dwellTimer = null; } }
+function onMoveStart() { cancelDwell(); status.textContent = "이동 중..."; }
+function onIdle() {
+  const m = lod();
+  cancelDwell();
+  if (m === "off") {
+    hideAllEdges();
+    applyPtVisibility();
+    status.textContent = "광역 보기 — 줌인하면 큰길 \u2192 세부길 안전도";
+    return;
+  }
+  applyEdgeVisibility();            // 캐시된 타일을 현재 LOD에 맞게 즉시 전환
+  status.textContent = "정지 " + Math.round(DWELL_MS / 1000) + "초 후 " +
+    (m === "full" ? "세부길 포함 전체" : "큰길") + " 로드...";
+  state.dwellTimer = setTimeout(() => { loadEdges(); loadPoints(); }, DWELL_MS);
+}
+
+function buildLegend() {
+  const bar = $("lgBar");
+  BINS.forEach(c => {
+    const b = document.createElement("i");
+    b.style.background = c;
+    bar.appendChild(b);
+  });
+}
+function boot() {
+  buildLegend();
+  const key = getKey();
+  if (!key) { showKeyBox(); return; }
+  if (location.protocol === "file:") {
+    showKeyBox("file:// 로 직접 열면 데이터 fetch가 차단됩니다.<br><code>python3 -m http.server 8000</code> 후 접속하십시오.");
+    return;
+  }
+  const sc = document.createElement("script");
+  sc.src = "https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=" + encodeURIComponent(key) + "&libraries=clusterer";
+  sc.onload = () => kakao.maps.load(init);
+  sc.onerror = () => showKeyBox("카카오 지도 SDK 로드 실패 — appkey, 카카오맵 사용 설정 ON, 사이트 도메인 등록을 확인하십시오.");
+  document.head.appendChild(sc);
+}
+function init() {
+  map = new kakao.maps.Map($("map"), {
+    center: new kakao.maps.LatLng(M.center[1], M.center[0]),
+    level: M.initLevel
+  });
+  map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+  state.info = new kakao.maps.InfoWindow({ zIndex: 9, removable: true });
+
+  loadStations();
+
+  kakao.maps.event.addListener(map, "dragstart", onMoveStart);
+  kakao.maps.event.addListener(map, "zoom_start", onMoveStart);
+  kakao.maps.event.addListener(map, "idle", onIdle);
+
+  $("lyStation").addEventListener("change", e => setStationsVisible(e.target.checked));
+  $("lyCctv").addEventListener("change", applyPtVisibility);
+  $("lyBell").addEventListener("change", applyPtVisibility);
+  $("lyBlind").addEventListener("change", e => setBlind(e.target.checked));
+
+  // 시설 공백 보고서 딥링크
+  const q = new URLSearchParams(location.search);
+  const qoffice = q.get("office");
+  const qlat = parseFloat(q.get("lat")), qlng = parseFloat(q.get("lng"));
+  function gapPin(lat, lng) {
+    const el = document.createElement("div"); el.className = "gap-pin"; el.textContent = "⚠️";
+    return new kakao.maps.CustomOverlay({ position: new kakao.maps.LatLng(lat, lng), content: el, xAnchor: 0.5, yAnchor: 0.5, zIndex: 11 });
+  }
+  if (qoffice) {
+    // 관서별: 해당 관서의 모든 공백 지점을 ⚠로 표시하고 범위 맞춤
+    fetch("assets/gaps.json").then(r => r.ok ? r.json() : []).then(rows => {
+      const sel = rows.filter(g => g[4] === qoffice);
+      if (!sel.length) {
+        if (isFinite(qlat) && isFinite(qlng)) { map.setLevel(4); map.setCenter(new kakao.maps.LatLng(qlat, qlng)); gapPin(qlat, qlng).setMap(map); }
+        return;
+      }
+      const bb = new kakao.maps.LatLngBounds();
+      sel.forEach(g => { gapPin(g[0], g[1]).setMap(map); bb.extend(new kakao.maps.LatLng(g[0], g[1])); });
+      if (sel.length === 1) { map.setLevel(4); map.setCenter(new kakao.maps.LatLng(sel[0][0], sel[0][1])); }
+      else map.setBounds(bb, 70, 70, 70, 70);
+      const top = sel.slice().sort((a, b) => b[2] - a[2])[0];
+      state.info.setContent('<div style="padding:9px 12px;font-size:12.5px;line-height:1.5;color:#1c1f24"><b style="color:#c0392b">' + qoffice.replace(/_/g, " ") + '</b><br>치안시설 공백 ' + sel.length + '개 지점 (CCTV·비상벨 없음)<br>최고 인구수요 ' + top[2].toLocaleString("ko-KR") + '</div>');
+      state.info.setPosition(new kakao.maps.LatLng(top[0], top[1]));
+      state.info.open(map);
+    }).catch(() => {});
+  } else if (isFinite(qlat) && isFinite(qlng)) {
+    map.setLevel(4); map.setCenter(new kakao.maps.LatLng(qlat, qlng));
+    gapPin(qlat, qlng).setMap(map);
+    state.info.setContent('<div style="padding:9px 12px;font-size:12.5px;line-height:1.5;color:#1c1f24"><b style="color:#c0392b">치안시설 공백 지점</b><br>반경 내 CCTV·비상벨 없음</div>');
+    state.info.setPosition(new kakao.maps.LatLng(qlat, qlng));
+    state.info.open(map);
+  }
+
+  onIdle();
+}
+boot();
+</script>
+<footer class="gfoot">
+  <span><b>전국 경찰 순찰 안전지도</b> — 순찰경로 최적화·가상순찰(ABM) 시뮬레이션 기반 도로 안전지수 시각화</span>
+  <span>안전지수는 전국 공통 산식(0~100)이며, 권역 구분은 표시·배포 단위입니다.</span>
+  <span>연구·분석용 산출물로 실제 치안 상황과 다를 수 있습니다.</span>
+</footer>
+</body>
+</html>
