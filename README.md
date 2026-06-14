@@ -351,41 +351,40 @@ González, Hidalgo & Barabási 2008], 다수 자기추진 입자의 집합동학
 ## 13. 참고문헌 (References)
 
 **경찰행정·환경범죄학**
-- Koper, C. S. (1995). *Just Enough Police Presence: Reducing Crime and Disorderly Behavior by Optimizing Patrol Time in Crime Hot Spots.* Justice Quarterly, 12(4), 649–672.
-- Sherman, L. W., & Weisburd, D. (1995). *General Deterrent Effects of Police Patrol in Crime "Hot Spots": A Randomized, Controlled Trial.* Justice Quarterly, 12(4), 625–648.
-- Braga, A. A., Turchan, B., Papachristos, A. V., & Hureau, D. M. (2019). *Hot Spots Policing of Small Geographic Areas Effects on Crime.* Campbell Systematic Reviews, 15(3), e1046.
-- Weisburd, D. (2015). *The Law of Crime Concentration and the Criminology of Place.* Criminology, 53(2), 133–157.
-- Cohen, L. E., & Felson, M. (1979). *Social Change and Crime Rate Trends: A Routine Activity Approach.* American Sociological Review, 44(4), 588–608.
-- Brantingham, P. L., & Brantingham, P. J. (1993). *Environment, Routine, and Situation: Toward a Pattern Theory of Crime.* Advances in Criminological Theory, 5.
-- Larson, R. C. (1972). *Urban Police Patrol Analysis.* MIT Press.
-- Jeffery, C. R. (1971). *Crime Prevention Through Environmental Design.* Sage.
-- Newman, O. (1972). *Defensible Space: Crime Prevention Through Urban Design.* Macmillan.
+
+- Koper, C. S. (1995). Just enough police presence: Reducing crime and disorderly behavior by optimizing patrol time in crime hot spots. *Justice Quarterly, 12*(4), 649–672. https://doi.org/10.1080/07418829500096231
+- Sherman, L. W., & Weisburd, D. (1995). General deterrent effects of police patrol in crime "hot spots": A randomized, controlled trial. *Justice Quarterly, 12*(4), 625–648. https://doi.org/10.1080/07418829500096221
+- Braga, A. A., Turchan, B., Papachristos, A. V., & Hureau, D. M. (2019). Hot spots policing of small geographic areas effects on crime. *Campbell Systematic Reviews, 15*(3), e1046. https://doi.org/10.1002/cl2.1046
+- Weisburd, D. (2015). The law of crime concentration and the criminology of place. *Criminology, 53*(2), 133–157. https://doi.org/10.1111/1745-9125.12070
+- Cohen, L. E., & Felson, M. (1979). Social change and crime rate trends: A routine activity approach. *American Sociological Review, 44*(4), 588–608. https://doi.org/10.2307/2094589
+- Brantingham, P. L., & Brantingham, P. J. (1993). Environment, routine, and situation: Toward a pattern theory of crime. *Advances in Criminological Theory, 5*, 259–294. 
+- Larson, R. C. (1972). *Urban police patrol analysis.* MIT Press.
+- Jeffery, C. R. (1971). *Crime prevention through environmental design.* Sage.
+- Newman, O. (1972). *Defensible space: Crime prevention through urban design.* Macmillan.
 
 **지리정보과학·최적화**
-- Boeing, G. (2017). *OSMnx: New Methods for Acquiring, Constructing, Analyzing, and Visualizing Complex Street Networks.* Computers, Environment and Urban Systems, 65, 126–139.
-- Okabe, A., Boots, B., Sugihara, K., & Chiu, S. N. (2000). *Spatial Tessellations: Concepts and Applications of Voronoi Diagrams* (2nd ed.). Wiley.
-- Edmonds, J., & Johnson, E. L. (1973). *Matching, Euler Tours and the Chinese Postman.* Mathematical Programming, 5, 88–124.
-- Vansteenwegen, P., Souffriau, W., & Van Oudheusden, D. (2011). *The Orienteering Problem: A Survey.* European Journal of Operational Research, 209(1), 1–10.
-- Gunawan, A., Lau, H. C., & Vansteenwegen, P. (2016). *Orienteering Problem: A Survey of Recent Variants, Solution Approaches and Applications.* EJOR, 255(2), 315–332.
-- Galceran, E., & Carreras, M. (2013). *A Survey on Coverage Path Planning for Robotics.* Robotics and Autonomous Systems, 61(12), 1258–1276.
-- Kirkpatrick, S., Gelatt, C. D., & Vecchi, M. P. (1983). *Optimization by Simulated Annealing.* Science, 220(4598), 671–680.
+
+- Boeing, G. (2017). OSMnx: New methods for acquiring, constructing, analyzing, and visualizing complex street networks. *Computers, Environment and Urban Systems, 65*, 126–139. https://doi.org/10.1016/j.compenvurbsys.2017.05.004
+- Okabe, A., Boots, B., Sugihara, K., & Chiu, S. N. (2000). *Spatial tessellations: Concepts and applications of Voronoi diagrams* (2nd ed.). Wiley. https://doi.org/10.1002/9780470317013
+- Edmonds, J., & Johnson, E. L. (1973). Matching, Euler tours and the Chinese postman. *Mathematical Programming, 5*, 88–124. https://doi.org/10.1007/BF01580113
+- Vansteenwegen, P., Souffriau, W., & Van Oudheusden, D. (2011). The orienteering problem: A survey. *European Journal of Operational Research, 209*(1), 1–10. https://doi.org/10.1016/j.ejor.2010.03.045
+- Gunawan, A., Lau, H. C., & Vansteenwegen, P. (2016). Orienteering problem: A survey of recent variants, solution approaches and applications. *European Journal of Operational Research, 255*(2), 315–332. https://doi.org/10.1016/j.ejor.2016.04.059
+- Galceran, E., & Carreras, M. (2013). A survey on coverage path planning for robotics. *Robotics and Autonomous Systems, 61*(12), 1258–1276. https://doi.org/10.1016/j.robot.2013.09.004
+- Kirkpatrick, S., Gelatt, C. D., & Vecchi, M. P. (1983). Optimization by simulated annealing. *Science, 220*(4598), 671–680. https://doi.org/10.1126/science.220.4598.671
 
 **복잡계 물리학·ABM·이동성**
-- Bonabeau, E. (2002). *Agent-Based Modeling: Methods and Techniques for Simulating Human Systems.* PNAS, 99(suppl. 3), 7280–7287.
-- Epstein, J. M., & Axtell, R. (1996). *Growing Artificial Societies: Social Science from the Bottom Up.* MIT Press.
-- Vicsek, T., et al. (1995). *Novel Type of Phase Transition in a System of Self-Driven Particles.* Physical Review Letters, 75(6), 1226–1229.
-- Noh, J. D., & Rieger, H. (2004). *Random Walks on Complex Networks.* Physical Review Letters, 92(11), 118701.
-- Viswanathan, G. M., et al. (1999). *Optimizing the Success of Random Searches.* Nature, 401, 911–914.
-- Brockmann, D., Hufnagel, L., & Geisel, T. (2006). *The Scaling Laws of Human Travel.* Nature, 439, 462–465.
-- González, M. C., Hidalgo, C. A., & Barabási, A.-L. (2008). *Understanding Individual Human Mobility Patterns.* Nature, 453, 779–782.
-- Metropolis, N., & Ulam, S. (1949). *The Monte Carlo Method.* Journal of the American Statistical Association, 44(247), 335–341.
-- Groff, E. R. (2007). *Simulation for Theory Testing and Experimentation: An Example Using Routine Activity Theory and Street Robbery.* Journal of Quantitative Criminology, 23(2), 75–103.
-- Malleson, N., Heppenstall, A., & See, L. (2010). *Crime Reduction Through Simulation: An Agent-Based Model of Burglary.* Computers, Environment and Urban Systems, 34(3), 236–250.
-- Andresen, M. A., & Malleson, N. (2015). *Crime, ABM, and CPTED.* Environment and Planning B.
+
+- Bonabeau, E. (2002). Agent-based modeling: Methods and techniques for simulating human systems. *Proceedings of the National Academy of Sciences, 99*(suppl. 3), 7280–7287. https://doi.org/10.1073/pnas.082080899
+- Epstein, J. M., & Axtell, R. (1996). *Growing artificial societies: Social science from the bottom up.* MIT Press. https://doi.org/10.7551/mitpress/3374.001.0001
+- Vicsek, T., Czirók, A., Ben-Jacob, E., Cohen, I., & Shochet, O. (1995). Novel type of phase transition in a system of self-driven particles. *Physical Review Letters, 75*(6), 1226–1229. https://doi.org/10.1103/PhysRevLett.75.1226
+- Noh, J. D., & Rieger, H. (2004). Random walks on complex networks. *Physical Review Letters, 92*(11), 118701. https://doi.org/10.1103/PhysRevLett.92.118701
+- Viswanathan, G. M., Buldyrev, S. V., Havlin, S., da Luz, M. G. E., Raposo, E. P., & Stanley, H. E. (1999). Optimizing the success of random searches. *Nature, 401*, 911–914. https://doi.org/10.1038/44831
+- Brockmann, D., Hufnagel, L., & Geisel, T. (2006). The scaling laws of human travel. *Nature, 439*, 462–465. https://doi.org/10.1038/nature04292
+- González, M. C., Hidalgo, C. A., & Barabási, A.-L. (2008). Understanding individual human mobility patterns. *Nature, 453*, 779–782. https://doi.org/10.1038/nature06958
+- Metropolis, N., & Ulam, S. (1949). The Monte Carlo method. *Journal of the American Statistical Association, 44*(247), 335–341. https://doi.org/10.1080/01621459.1949.10483310
+- Groff, E. R. (2007). Simulation for theory testing and experimentation: An example using routine activity theory and street robbery. *Journal of Quantitative Criminology, 23*(2), 75–103. https://doi.org/10.1007/s10940-006-9021-z
+- Malleson, N., Heppenstall, A., & See, L. (2010). Crime reduction through simulation: An agent-based model of burglary. *Computers, Environment and Urban Systems, 34*(3), 236–250. https://doi.org/10.1016/j.compenvurbsys.2009.10.005
 
 **인공지능·강화학습**
-- Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction* (2nd ed.). MIT Press.
 
----
-
-*문서 생성: 전국 순찰 최적화·가상순찰 파이프라인 (2026, 개정판)*
+- Sutton, R. S., & Barto, A. G. (2018). *Reinforcement learning: An introduction* (2nd ed.). MIT Press. 
